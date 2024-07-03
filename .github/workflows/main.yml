@@ -12,37 +12,30 @@ permissions:
   contents: read #  to fetch code (actions/checkout)
 
 jobs:
-
-  build-and-verify:
-    name: Build and verify (JDK ${{ matrix.java }})
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        java: ['8', '11', '17', '21']
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download Maven # Download with default JDK because OpenJDK 6 does not support TLS 1.2
-        run: ./mvnw --version
-      - name: Set up JDK 6
-        if: ${{ matrix.java == '6'}}
-        uses: actions/setup-java@v1
-        with:
-          java-version: ${{ matrix.java }}
-      - name: Set up JDK
-        if: ${{ matrix.java != '6'}}
-        uses: actions/setup-java@v2
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: temurin
-          cache: maven
-      - name: Build and verify
-        run: ./mvnw verify javadoc:javadoc site:site --batch-mode --errors --settings .github/workflows/settings.xml
-      - name: Run unit tests and generate coverage report
-        run: mvn test jacoco:report
 
-      - name: SonarQube Scan
-        run: mvn sonar:sonar -Dsonar.projectKey=code-coverage -Dsonar.host.url=http://3.88.181.110:9000 -Dsonar.login=sqp_da3a3d6e6d231009b71dcd6de84487ee944072a4
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Build with Maven
+      run: mvn clean install
+
+  
+    - name: Build and verify
+      run: ./mvnw verify javadoc:javadoc site:site --batch-mode --errors --settings .github/workflows/settings.xml
+    - name: Run unit tests and generate coverage report
+      run: mvn test jacoco:report
+
+    - name: SonarQube Scan
+      run: mvn sonar:sonar -Dsonar.projectKey=code-coverage -Dsonar.host.url=http://3.88.181.110:9000 -Dsonar.login=sqp_da3a3d6e6d231009b71dcd6de84487ee944072a4
 
   # publish-snapshots:
   #   name: Publish snapshot artifacts
