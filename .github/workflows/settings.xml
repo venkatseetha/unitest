@@ -8,11 +8,11 @@
         </mirror>
     </mirrors>
     <servers>
-        <server>
+<!--         <server>
             <id>junit-snapshot-repo</id>
             <username>${env.OSSRH_USERNAME}</username>
             <password>${env.OSSRH_PASSWORD}</password>
-        </server>
+        </server> -->
         <server>
             <id>junit-releases-repo</id>
             <username>${env.OSSRH_USERNAME}</username>
