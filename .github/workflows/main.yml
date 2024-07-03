@@ -38,22 +38,27 @@ jobs:
           cache: maven
       - name: Build and verify
         run: ./mvnw verify javadoc:javadoc site:site --batch-mode --errors --settings .github/workflows/settings.xml
+      - name: Run unit tests and generate coverage report
+        run: mvn test jacoco:report
 
-  publish-snapshots:
-    name: Publish snapshot artifacts
-    if: github.event_name == 'push' && github.repository == 'junit-team/junit4' && github.ref == 'refs/heads/main'
-    needs: build-and-verify
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download Maven # Download with default JDK because OpenJDK 6 does not support TLS 1.2
-        run: ./mvnw --version
-      - name: Set up JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: 8
-      - name: Publish snapshot artifacts
-        env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        run: ./mvnw deploy --batch-mode --errors --activate-profiles generate-docs --settings .github/workflows/settings.xml
+      - name: SonarQube Scan
+        run: mvn sonar:sonar -Dsonar.projectKey=code-coverage -Dsonar.host.url=http://3.88.181.110:9000 -Dsonar.login=sqp_da3a3d6e6d231009b71dcd6de84487ee944072a4
+
+  # publish-snapshots:
+  #   name: Publish snapshot artifacts
+  #   if: github.event_name == 'push' && github.repository == 'junit-team/junit4' && github.ref == 'refs/heads/main'
+  #   needs: build-and-verify
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Download Maven # Download with default JDK because OpenJDK 6 does not support TLS 1.2
+  #       run: ./mvnw --version
+  #     - name: Set up JDK
+  #       uses: actions/setup-java@v1
+  #       with:
+  #         java-version: 8
+  #     - name: Publish snapshot artifacts
+  #       env:
+  #         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+  #         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+  #       run: ./mvnw deploy --batch-mode --errors --activate-profiles generate-docs --settings .github/workflows/settings.xml
